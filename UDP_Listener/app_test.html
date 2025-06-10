@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GT7 Telemetry Monitor</title>
+  <style>
+    body { font-family: monospace; background: #222; color: #eee; }
+    .label { color: #90ee90; }
+    .value { color: #fff; }
+    .box { border: 2px solid #90ee90; padding: 1em; display: inline-block; }
+    h2 { margin-top: 0; }
+    .row { margin-bottom: 0.2em; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>GT7 Telemetry Monitor</h2>
+    <div class="row"><span class="label">Package ID:</span> <span class="value" id="package_id"></span></div>
+    <div class="row"><span class="label">Position:</span> <span class="value" id="position"></span></div>
+    <div class="row"><span class="label">Lap:</span> <span class="value" id="lap"></span></div>
+    <div class="row"><span class="label">Speed:</span> <span class="value" id="car_speed"></span> km/h</div>
+    <div class="row"><span class="label">RPM:</span> <span class="value" id="rpm"></span></div>
+    <div class="row"><span class="label">Gear:</span> <span class="value" id="current_gear"></span></div>
+    <div class="row"><span class="label">Throttle:</span> <span class="value" id="throttle"></span> %</div>
+    <div class="row"><span class="label">Brake:</span> <span class="value" id="brake"></span> %</div>
+    <div class="row"><span class="label">Fuel:</span> <span class="value" id="current_fuel"></span> / <span class="value" id="fuel_capacity"></span> L</div>
+    <div class="row"><span class="label">Oil Temp:</span> <span class="value" id="oil_temp"></span> °C</div>
+    <div class="row"><span class="label">Water Temp:</span> <span class="value" id="water_temp"></span> °C</div>
+    <div class="row"><span class="label">Paused:</span> <span class="value" id="is_paused"></span></div>
+    <div class="row"><span class="label">In Race:</span> <span class="value" id="in_race"></span></div>
+  </div>
+  <script>
+    // Change ip according to your backend setup
+    const ip = "192.168.1.74";
+    const ws = new WebSocket(`ws://localhost:8000/ws/telemetry?ip=${ip}`);
+
+    ws.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      document.getElementById('package_id').textContent = data.package_id;
+      document.getElementById('position').textContent = `${data.current_position} / ${data.total_positions}`;
+      document.getElementById('lap').textContent = `${data.current_lap} / ${data.total_laps}`;
+      document.getElementById('car_speed').textContent = data.car_speed?.toFixed(1);
+      document.getElementById('rpm').textContent = Math.round(data.rpm);
+      document.getElementById('current_gear').textContent = data.current_gear;
+      document.getElementById('throttle').textContent = data.throttle?.toFixed(1);
+      document.getElementById('brake').textContent = data.brake?.toFixed(1);
+      document.getElementById('current_fuel').textContent = data.current_fuel?.toFixed(1);
+      document.getElementById('fuel_capacity').textContent = data.fuel_capacity?.toFixed(1);
+      document.getElementById('oil_temp').textContent = data.oil_temp?.toFixed(1);
+      document.getElementById('water_temp').textContent = data.water_temp?.toFixed(1);
+      document.getElementById('is_paused').textContent = data.is_paused ? "Yes" : "No";
+      document.getElementById('in_race').textContent = data.in_race ? "Yes" : "No";
+    };
+
+    ws.onerror = function(event) {
+      console.error("WebSocket error:", event);
+    };
+  </script>
+</body>
+</html>
